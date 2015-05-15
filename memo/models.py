@@ -6,9 +6,12 @@ class Memo(models.Model):
     title = models.CharField(max_length=200)
     text = models.TextField(default=" ")
     created = models.DateTimeField(auto_now_add=True)
-    category = models.ForeignKey('Category', null=True)
+    category = models.ForeignKey('Category', null=True, blank=True)
     chosen = models.BooleanField(default=False)
     owner = models.ForeignKey(User)
+
+    def __str__(self):
+        return self.title
 
 
 class Category(models.Model):
