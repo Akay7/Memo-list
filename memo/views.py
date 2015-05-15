@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from django.views import generic
+from .models import Memo
 
-# Create your views here.
+
+class MemoDetailView(generic.DetailView):
+    model = Memo
+    template_name = 'memo/memo.html'

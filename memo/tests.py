@@ -13,5 +13,5 @@ class MemoTest(TestCase):
         self.assertEqual(self.memo.owner.username, "Gordon")
 
     def test_memo_static_html_page(self):
-        response = self.client.get('/note/uuid')
+        response = self.client.get('/note/%s' % self.memo.id)
         self.assertContains(response, "Title")
