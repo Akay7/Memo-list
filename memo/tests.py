@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Memo
+from .models import Memo, Category
 
 
 class MemoTest(TestCase):
@@ -15,3 +15,12 @@ class MemoTest(TestCase):
     def test_memo_static_html_page(self):
         response = self.client.get('/note/%s' % self.memo.id)
         self.assertContains(response, "Title")
+
+    def test_add_memo_with_new_category(self):
+        category = Category.objects.create(name='ToDo')
+        todo = Memo.objects.create(
+            title="Kill headcrab",
+            category=category,
+            owner=self.user,
+        )
+        self.assertEqual(todo.category, category)
