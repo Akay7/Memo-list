@@ -1,4 +1,5 @@
 from django.db import models
+from django.core import serializers
 from django.contrib.auth.models import User
 
 
@@ -9,6 +10,17 @@ class Memo(models.Model):
     category = models.ForeignKey('Category', null=True, blank=True)
     chosen = models.BooleanField(default=False)
     owner = models.ForeignKey(User)
+
+    def as_dict(self):
+        d = dict(
+            pk=self.pk,
+            title=self.title,
+            text=self.text,
+            created=self.created.isoformat(),
+            #chosen=self.chosen,
+            #owner=self.owner.username
+        )
+        return d
 
     def __str__(self):
         return self.title

@@ -1,3 +1,4 @@
+import json
 from django.test import TestCase
 from django.contrib.auth.models import User
 from .models import Memo, Category
@@ -24,3 +25,8 @@ class MemoTest(TestCase):
             owner=self.user,
         )
         self.assertEqual(todo.category, category)
+
+    def test_get_memo_list_json(self):
+        response = self.client.get('/note/get_all/')
+        self.assertContains(response, self.memo.title)
+

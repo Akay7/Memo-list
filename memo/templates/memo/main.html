@@ -1,0 +1,81 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Memo project</title>
+    <link rel="stylesheet" type="text/css"
+        href="{% static 'ext-js/resources/css/ext-all.css' %}" />
+    <script src="{% static 'ext-js/adapter/ext/ext-base.js' %}"></script>
+    <script src="{% static 'ext-js/ext-all-debug.js' %}"></script>
+    <script>
+
+Ext.onReady(function(){
+    Ext.QuickTips.init();
+
+    Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+
+    // create the data store
+    var reader = new Ext.data.JsonReader({
+        idProperty: 'pk',
+        root: 'data',
+
+        fields: [
+           {name: 'title', mapping: 'title'},
+           {name: 'text', mapping: 'text' },
+           {name: 'created', mapping: 'created'},
+        ]
+    });
+
+    var store = new Ext.data.Store({
+        url: 'note/get_all/',
+        reader: reader,
+        autoLoad: true
+    })
+
+    // create the Grid
+    var grid = new Ext.grid.GridPanel({
+        store: store,
+        columns: [
+            {
+                id       :'company',
+                header   : 'Title',
+
+                sortable : true,
+                dataIndex: 'title'
+            },
+            {
+                header   : 'Text',
+
+                sortable : true,
+                dataIndex: 'text'
+            },
+            {
+                header   : 'Created',
+
+                sortable : true,
+                renderer : Ext.util.Format.dateRenderer('m/d/Y h:m'),
+                dataIndex: 'created'
+            },
+
+        ],
+        stripeRows: true,
+        autoExpandColumn: 'company',
+
+        title: 'Memo',
+        // config options for stateful behavior
+        height: 350,
+        width: 300,
+        stateful: true,
+        stateId: 'grid'
+    });
+
+    grid.render('grid-memo');
+});
+
+    </script>
+</head>
+<body>
+    <div id="grid-memo"></div>
+</body>
+</html>
