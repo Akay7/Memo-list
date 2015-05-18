@@ -36,5 +36,8 @@ class MemoTest(TestCase):
         self.assertContains(response, self.memo.title)
 
     def test_del_item(self):
-        response = self.client.get('/note/%s/del' % self.memo.id)
+        response = self.client.post(
+            '/note/api/',
+            {'operation': 'remove', 'item_id': self.memo.id}
+        )
         self.assertNotContains(response, self.memo.title)

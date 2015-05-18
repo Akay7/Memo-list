@@ -6,11 +6,31 @@
     <title>Memo project</title>
     <link rel="stylesheet" type="text/css"
         href="{% static 'ext-js/resources/css/ext-all.css' %}" />
+    <script src="{% static 'jquery.min.js' %}"></script>
+    <script src="{% static 'ext-js/adapter/jquery/ext-jquery-adapter.js' %}"></script>
     <script src="{% static 'ext-js/adapter/ext/ext-base.js' %}"></script>
     <script src="{% static 'ext-js/ext-all-debug.js' %}"></script>
     <script>
 
 Ext.onReady(function(){
+    function getCookie(name) {
+          var cookieValue = null;
+          if (document.cookie && document.cookie != '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                  var cookie = jQuery.trim(cookies[i]);
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+
+                      break;
+                  }
+              }
+          }
+          return cookieValue;
+    };
+
+
     Ext.QuickTips.init();
 
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
@@ -21,6 +41,7 @@ Ext.onReady(function(){
         root: 'data',
 
         fields: [
+           {name: 'pk', mapping: 'pk'},
            {name: 'title', mapping: 'title'},
            {name: 'text', mapping: 'text' },
            {name: 'created', mapping: 'created'},
@@ -39,9 +60,12 @@ Ext.onReady(function(){
         columns: [
             {
                 id       :'company',
+                header   : 'id',
+                width    : 20,
+                dataIndex: 'pk'
+            },
+            {
                 header   : 'Title',
-
-                sortable : true,
                 dataIndex: 'title'
             },
             {
@@ -57,18 +81,67 @@ Ext.onReady(function(){
                 renderer : Ext.util.Format.dateRenderer('m/d/Y h:m'),
                 dataIndex: 'created'
             },
+            {
+                xtype: 'actioncolumn',
+                items: [{
+                    icon :"{% static 'icons/delete.png' %}",
+                    tooltip: "Delete",
+                    handler: function(grid, rowIndex, colIndex) {
+                        var rec = store.getAt(rowIndex);
+                        //alert(rec.get('pk'));
+                        Ext.Msg.show({
+                            title: 'Remove column',
+                            buttons: Ext.MessageBox.YESNOCANCEL,
+                            msg: 'Remove ' + rec.data.title + '?',
+                            fn: function(btn) {
+                                if (btn == 'yes'){
+                                    var url = 'note/' + rec.get('pk') + '/del/';
+
+                                    Ext.Ajax.request({
+                                        url: 'note/api/',
+                                        method: 'POST',
+                                        headers: { "X-CSRFToken": getCookie('csrftoken') },
+                                        params: {'operation': 'remove', 'item_id': rec.get('pk')},
+                                        success: function(result, request) {
+                                            grid.getStore().remove(rec);
+                                        }
+                                    });
+                                };
+                            }
+                        });
+                    }
+                }, {
+                    icon :"{% static 'icons/notes.png' %}",
+                    tooltip: "Edit",
+                }]
+            },
 
         ],
         stripeRows: true,
         autoExpandColumn: 'company',
 
+        tbar: [{
+            text: 'Add',
+            icon :"{% static 'icons/notes.png' %}",
+        }, {
+            text: 'Logout',
+            icon :"{% static 'icons/exit.png' %}",
+        }, {
+            text: 'Login',
+            icon :"{% static 'icons/login.png' %}",
+        },
+        ],
+
+
         title: 'Memo',
         // config options for stateful behavior
-        height: 350,
-        width: 300,
+        height: 300,
+        width: 500,
         stateful: true,
         stateId: 'grid'
     });
+
+
 
     grid.render('grid-memo');
 });

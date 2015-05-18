@@ -44,14 +44,18 @@ class MemoDetailView(generic.DetailView):
         return super(MemoDetailView, self).render_to_response(context, **response_kwargs)
 
 
-class MemoDeleteView(JSONResponseMixin, generic.DetailView):
+class MemoAPI(JSONResponseMixin, generic.View):
     model = Memo
 
-    def render_to_response(self, context, **response_kwargs):
-        obj = self.get_object()
-        if obj:
-            obj.delete()
+    def post(self, request):
+        item_id = request.POST.get("item_id")
+        item = self.model.objects.get(id=item_id)
+
+        operation = request.POST.get("operation")
+        if operation == "remove":
+            item.delete()
             return self.render_to_json_response({'deleted': True})
+
         return self.render_to_json_response({'deleted': False})
 
 
