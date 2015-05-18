@@ -3,7 +3,7 @@ from .models import Memo, Category
 
 
 class MemoAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'chosen', 'owner']
+    list_display = ['title', 'category', 'chosen', 'owner', 'published']
 
 admin.site.register(Memo, MemoAdmin)
 

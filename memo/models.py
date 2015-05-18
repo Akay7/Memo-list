@@ -10,6 +10,7 @@ class Memo(models.Model):
     category = models.ForeignKey('Category', null=True, blank=True)
     chosen = models.BooleanField(default=False)
     owner = models.ForeignKey(User)
+    published = models.BooleanField(default=False)
 
     def as_dict(self):
         d = dict(
