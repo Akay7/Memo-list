@@ -10,27 +10,12 @@
     <script src="{% static 'ext-js/adapter/jquery/ext-jquery-adapter.js' %}"></script>
     <script src="{% static 'ext-js/adapter/ext/ext-base.js' %}"></script>
     <script src="{% static 'ext-js/ext-all-debug.js' %}"></script>
+    <script src="{% static 'scripts/Cookie.js' %}"></script>
+    <script src="{% static 'scripts/Auth.js' %}"></script>
+
     <script>
 
 Ext.onReady(function(){
-    function getCookie(name) {
-          var cookieValue = null;
-          if (document.cookie && document.cookie != '') {
-              var cookies = document.cookie.split(';');
-              for (var i = 0; i < cookies.length; i++) {
-                  var cookie = jQuery.trim(cookies[i]);
-                  // Does this cookie string begin with the name we want?
-                  if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-
-                      break;
-                  }
-              }
-          }
-          return cookieValue;
-    };
-
-
     Ext.QuickTips.init();
 
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
@@ -100,7 +85,6 @@ Ext.onReady(function(){
                                     Ext.Ajax.request({
                                         url: 'note/api/',
                                         method: 'POST',
-                                        headers: { "X-CSRFToken": getCookie('csrftoken') },
                                         params: {'operation': 'remove', 'item_id': rec.get('pk')},
                                         success: function(result, request) {
                                             grid.getStore().remove(rec);
@@ -123,12 +107,36 @@ Ext.onReady(function(){
         tbar: [{
             text: 'Add',
             icon :"{% static 'icons/notes.png' %}",
-        }, {
+        },'->',
+        {
             text: 'Logout',
             icon :"{% static 'icons/exit.png' %}",
-        }, {
+            handler: function() {
+                Ext.Ajax.request({
+                    url: 'auth/',
+                    method: 'POST',
+                    params: {'operation': 'logout'},
+                    success: function(result, request) {
+                        console.log('logout');
+                    }
+                });
+            }
+        },
+        {
             text: 'Login',
             icon :"{% static 'icons/login.png' %}",
+            handler: function() {
+                var obj = new My.scripts.Auth('Login','auth/', 'login');
+                obj.show();
+            }
+        },
+        {
+            text: 'Registering',
+            icon :"{% static 'icons/account.png' %}",
+            handler: function() {
+                var obj = new My.scripts.Auth('Register','auth/', 'register');
+                obj.show();
+            }
         },
         ],
 
@@ -140,8 +148,6 @@ Ext.onReady(function(){
         stateful: true,
         stateId: 'grid'
     });
-
-
 
     grid.render('grid-memo');
 });

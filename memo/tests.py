@@ -41,3 +41,22 @@ class MemoTest(TestCase):
             {'operation': 'remove', 'item_id': self.memo.id}
         )
         self.assertNotContains(response, self.memo.title)
+
+class AuthApiTest(TestCase):
+    def test_create_user(self):
+        response = self.client.post(
+            '/auth/',
+            {'operation': 'register',
+             'username': 'Gordon',
+             'password': 'qwerty'}
+        )
+        self.assertContains(response, 'true')
+
+    def test_login_not_created_user(self):
+        response = self.client.post(
+            '/auth/',
+            {'operation': 'login',
+             'username': 'Gordon',
+             'password': 'qwerty'}
+        )
+        self.assertContains(response, 'false')

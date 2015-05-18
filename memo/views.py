@@ -1,3 +1,6 @@
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.http import JsonResponse, Http404, HttpResponseNotFound
 from django.views import generic
 from .models import Memo
@@ -57,6 +60,48 @@ class MemoAPI(JSONResponseMixin, generic.View):
             return self.render_to_json_response({'deleted': True})
 
         return self.render_to_json_response({'deleted': False})
+
+class AuthAPI(JSONResponseMixin, generic.View):
+    def post(self, request):
+        operation = request.POST.get("operation")
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if operation == "login":
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return self.render_to_json_response(
+                        {'username': username, 'success': True}
+                    )
+            return self.render_to_json_response(
+                {'username': username, 'success': False,
+                 'errormsg': 'Please input correct User name and Login'}
+            )
+        if operation == "logout":
+            print(request.POST)
+            logout(request)
+            print('after logout')
+            return self.render_to_json_response(
+                {'success': True}
+            )
+
+        if operation == "register":
+            try:
+                User.objects.get(username=username)
+                return self.render_to_json_response({
+                    'username': username, 'success': False,
+                    'errormsg': 'User with this name already registered'
+                })
+            except ObjectDoesNotExist:
+                user = User.objects.create_user(
+                    username=username, password=password)
+                user.save()
+                return self.render_to_json_response(
+                    {'username': username, 'success': True}
+                )
+
 
 
 class MainPageView(JSONResponseMixin, generic.TemplateView):
