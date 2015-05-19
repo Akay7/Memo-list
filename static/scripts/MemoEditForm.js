@@ -53,15 +53,12 @@ Ext.onReady(function(){
                         fieldLabel: 'Chosen',
                         name: 'chosen',
                         type: 'boolean',
-                        anchor: '50%',
                     },{
                         xtype: 'checkbox',
                         fieldLabel: 'Published',
                         name: 'published',
                         type: 'boolean',
-                        anchor: '50%',
                     }
-
                 ],
                 buttons: [{
                     text: 'OK',

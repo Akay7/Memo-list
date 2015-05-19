@@ -65,6 +65,7 @@ class MemoAPI(JSONResponseMixin, generic.View):
 
     def post(self, request):
         if request.user.is_authenticated():
+            print(request.POST)
             values = {key: request.POST[key] for key in
                       ["id", "title", "text", "created", "category", "chosen", "published"]
                       if request.POST.get(key, None) is not None and request.POST[key] != ''}
@@ -73,7 +74,7 @@ class MemoAPI(JSONResponseMixin, generic.View):
             values.update({key: Category.objects.get() for key in ["category"]
                            if request.POST.get(key, None)})
             values.update({'owner': request.user})
-
+            print(values)
             if values.get('id', None) and self.model.objects.filter(
                     id=values['id'], owner=request.user).first():
                 operation = request.POST.get("operation")
@@ -85,6 +86,7 @@ class MemoAPI(JSONResponseMixin, generic.View):
                     print(obj.as_dict())
                     return self.render_to_json_response({'data': obj.as_dict(), 'success': True})
                 else:
+                    print('update')
                     self.model.objects.filter(id=values['id']).update(**values)
                     return self.render_to_json_response({'success': True})
 

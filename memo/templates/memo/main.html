@@ -46,26 +46,19 @@ Ext.onReady(function(){
     var store = new Ext.data.Store({
         url: 'note/get_all/',
         reader: reader,
-        autoLoad: true
-    })
+        autoLoad: true,
+        sortInfo: { field: "created", direction: "ASC" }
+    });
 
     var grid = new Ext.grid.GridPanel({
         store: store,
         columns: [
-            {
-                id       :'company',
-                header   : 'uuid',
-                width    : 20,
-                dataIndex: 'pk'
-            },
             {
                 header   : 'Title',
                 dataIndex: 'title'
             },
             {
                 header   : 'Text',
-
-                sortable : true,
                 dataIndex: 'text'
             },
             {
@@ -77,27 +70,17 @@ Ext.onReady(function(){
             },
             {
                 header   : 'Published',
-
-                sortable : true,
                 dataIndex: 'published'
             },
             {
                 header   : 'Category',
-
                 sortable : true,
                 dataIndex: 'category'
             },
             {
                 header   : 'Chosen',
-
                 sortable : true,
                 dataIndex: 'chosen'
-            },
-            {
-                header   : 'Owner',
-
-                sortable : true,
-                dataIndex: 'owner'
             },
 
             {
@@ -135,11 +118,29 @@ Ext.onReady(function(){
                         var rec = store.getAt(rowIndex);
                         new My.scripts.MemoEditForm(store, rec.get('pk'));
                     }
+                }, {
+                    icon :"{% static 'icons/eye.png' %}",
+                    tooltip: "Public",
+                    handler: function(grid, rowIndex, colIndex) {
+                        var rec = store.getAt(rowIndex);
+                        Ext.Ajax.request({
+                            url: 'note/api/',
+                            method: 'POST',
+                            params: {'id': rec.get('pk'), 'published': 'on'},
+                            success: function(result, request) {
+                                store.reload();
+                            }
+                        });
+                    }
                 }]
+            },
+            {
+                header   : 'uuid',
+                width    : 20,
+                dataIndex: 'pk'
             },
         ],
         stripeRows: true,
-        autoExpandColumn: 'company',
 
         tbar: [{
             text: 'Add',
