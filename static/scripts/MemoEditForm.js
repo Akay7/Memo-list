@@ -3,6 +3,17 @@ Ext.onReady(function(){
         memoEditDlg: "None",
         constructor: function (id) {
             console.log('before in constructor');
+            category = new Ext.data.Store({
+                reader: new Ext.data.JsonReader({
+                    fields: ['tk', 'name'],
+                    root: 'data'
+                }),
+                proxy: new Ext.data.HttpProxy({
+                    url: 'note/category_all/'
+                }),
+                autoLoad: true
+            })
+
             f = new Ext.FormPanel({
                 labelWidth: 100,
                 url: 'note/api/',
@@ -30,6 +41,14 @@ Ext.onReady(function(){
                         allowBlank: false,
                         anchor: '100%',
                     },{
+                        xtype: 'combo',
+                        fieldLabel: 'Category',
+                        mode: 'local',
+                        store: category,
+                        displayField:'name',
+                        valueField: 'pk',
+                        name: 'category',
+                    },{
                         xtype: 'checkbox',
                         fieldLabel: 'Chosen',
                         name: 'chosen',
@@ -42,6 +61,7 @@ Ext.onReady(function(){
                         type: 'boolean',
                         anchor: '50%',
                     }
+
                 ],
                 buttons: [{
                     text: 'OK',
@@ -91,5 +111,4 @@ Ext.onReady(function(){
 
         }
     });
-    //var bom = new My.scripts.MemoEditForm();
 });

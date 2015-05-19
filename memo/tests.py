@@ -89,6 +89,19 @@ class MemoTest(TestCase):
         m = Memo.objects.filter(title='NewMemo').first()
 
 
+class CategoryTest(TestCase):
+    def setUp(self):
+        Category.objects.create(name='ToDo')
+        Category.objects.create(name='bla bla bla')
+
+    def test_get_all_category(self):
+        response = self.client.get(
+            '/note/category_all/'
+        )
+        self.assertContains(response, 'ToDo')
+        self.assertContains(response, 'true')
+
+
 class AuthApiTest(TestCase):
     def test_create_user(self):
         response = self.client.post(

@@ -1,9 +1,9 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.http import JsonResponse, Http404, HttpResponseNotFound
+from django.http import JsonResponse, Http404
 from django.views import generic
-from .models import Memo
+from .models import Memo, Category
 
 
 class JSONResponseMixin(object):
@@ -24,13 +24,19 @@ class JSONResponseMixin(object):
         Returns an object that will be serialized as JSON by json.dumps().
         """
         if 'object_list' in context:
-            return {"data": [i.as_dict() for i in context['object_list']]}
+            return {"data": [i.as_dict() for i in context['object_list']], 'success': True}
 
         return context
 
 
-class MemoListJSON(JSONResponseMixin, generic.ListView):
+class MemoList(JSONResponseMixin, generic.ListView):
     model = Memo
+
+    def render_to_response(self, context, **response_kwargs):
+        return self.render_to_json_response(context, **response_kwargs)
+
+class CategoryList(JSONResponseMixin, generic.ListView):
+    model = Category
 
     def render_to_response(self, context, **response_kwargs):
         return self.render_to_json_response(context, **response_kwargs)
@@ -52,15 +58,15 @@ class MemoAPI(JSONResponseMixin, generic.View):
     model = Memo
 
     def post(self, request):
-
         if request.user.is_authenticated():
-            values = {val: request.POST[val] for val in
+            values = {key: request.POST[key] for key in
                       ["id", "title", "text", "created", "category", "chosen", "published"]
-                      if request.POST.get(val, None) is not None and request.POST[val] != ''}
+                      if request.POST.get(key, None) is not None and request.POST[key] != ''}
             values.update({key: True for key in ["chosen", "published"]
                            if values.get(key, None) == 'on'})
+            values.update({key: Category.objects.get() for key in ["category"]
+                           if request.POST.get(key, None)})
             values.update({'owner': request.user})
-            print(values)
 
             if values.get('id', None) and self.model.objects.filter(
                     id=values['id'], owner=request.user).first():

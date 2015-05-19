@@ -35,5 +35,12 @@ class Memo(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=200)
 
+    def as_dict(self):
+        d = dict(
+            pk=self.pk,
+            name=self.name
+        )
+        return d
+
     def __str__(self):
         return self.name

@@ -21,6 +21,11 @@ Ext.onReady(function(){
 
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
 
+    {% if request.user %}
+    var auth = new My.scripts.Auth(true);
+    {% else %}
+    var auth = new My.scripts.Auth(false);
+    {% endif %}
     // create the data store
     var reader = new Ext.data.JsonReader({
         idProperty: 'pk',
@@ -147,30 +152,21 @@ Ext.onReady(function(){
             text: 'Logout',
             icon :"{% static 'icons/exit.png' %}",
             handler: function() {
-                Ext.Ajax.request({
-                    url: 'auth/',
-                    method: 'POST',
-                    params: {'operation': 'logout'},
-                    success: function(result, request) {
-                        console.log('logout');
-                    }
-                });
+                auth.logout();
             }
         },
         {
             text: 'Login',
             icon :"{% static 'icons/login.png' %}",
             handler: function() {
-                var obj = new My.scripts.Auth('Login','auth/', 'login');
-                obj.show();
+                auth.login();
             }
         },
         {
             text: 'Registering',
             icon :"{% static 'icons/account.png' %}",
             handler: function() {
-                var obj = new My.scripts.Auth('Register','auth/', 'register');
-                obj.show();
+                auth.register();
             }
         },
         ],

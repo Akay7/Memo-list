@@ -1,28 +1,32 @@
 
 Ext.onReady(function(){
     Ext.define("My.scripts.Auth", {
-        loginDlg: 'Unknown',
-        constructor: function(title, url, operation){
+        loggedInVar: false,
+        constructor: function(logged){
+            this.loggedInVar = logged;
+        },
+
+        formGenerator: function(title, url, operation) {
             f = new Ext.FormPanel({
-                labelWidth: 100,
-                url: url,
-                frame: true,
-                defaults: {width: 100},
-                items: [{xtype: 'textfield',
-                    fieldLabel: 'User name',
-                    name: 'username',
-                    vtype: 'alpha',
-                    allowBlank: false},
-                    {xtype: 'textfield',
-                    inputType: 'password',
-                    fieldLabel: 'Password',
-                    name: 'password',
-                    allowBlank: false},
-                    {
-                        xtype : 'hidden',  //should use the more standard hiddenfield
-                        name  : 'operation',
-                        value : operation,
-                    }
+            labelWidth: 100,
+            url: url,
+            frame: true,
+            defaults: {width: 100},
+            items: [{xtype: 'textfield',
+                fieldLabel: 'User name',
+                name: 'username',
+                vtype: 'alpha',
+                allowBlank: false},
+                {xtype: 'textfield',
+                inputType: 'password',
+                fieldLabel: 'Password',
+                name: 'password',
+                allowBlank: false},
+                {
+                    xtype : 'hidden',  //should use the more standard hiddenfield
+                    name  : 'operation',
+                    value : operation,
+                }
 
                 ],
                 buttons: [{
@@ -32,7 +36,11 @@ Ext.onReady(function(){
                         f.getForm().submit({
                             success: function(form, action){
                                 //Ext.Msg.alert('Success', 'It worked');
-                                loginDlg.close();
+                                if (operation == 'login')
+                                {
+                                    this.loggedInVar = true;
+                                }
+                                dialog.close();
                             },
                             failure: function(form, action){
                                 Ext.Msg.alert('Warning', action.result.errormsg);
@@ -43,11 +51,11 @@ Ext.onReady(function(){
                     text: 'Cancel',
                     minWidth: 75,
                     handler: function() {
-                        loginDlg.close();
+                        dialog.close();
                     }
                 }]
             });
-            loginDlg = new Ext.Window({
+            dialog = new Ext.Window({
                 height: 140,
                 width: 300,
                 closable: true,
@@ -57,13 +65,30 @@ Ext.onReady(function(){
                 layout: 'fit',
                 items: f
             });
-            this.loginDlg = loginDlg;
-            //this.show();
-            //this.close();
+            return dialog;
+        },
+        getLoggedInStatus: function() {
+            return this.loggedInVar;
         },
 
-        show: function() {
-            this.loginDlg.show();
+        login: function() {
+            loginDlg = this.formGenerator('Login','auth/', 'login');
+            loginDlg.show();
+        },
+        register: function() {
+            registerDlg = this.formGenerator('Register','auth/', 'register');
+            registerDlg.show();
+        },
+        logout: function() {
+            Ext.Ajax.request({
+                url: 'auth/',
+                method: 'POST',
+                params: {'operation': 'logout'},
+                success: function(result, request) {
+                    this.loggedInVar = false;
+                }
+            });
         }
+
     });
 });
