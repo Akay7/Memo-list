@@ -25,6 +25,7 @@ class JSONResponseMixin(object):
         """
         if 'object_list' in context:
             return {"data": [i.as_dict() for i in context['object_list']]}
+
         return context
 
 
@@ -51,19 +52,26 @@ class MemoAPI(JSONResponseMixin, generic.View):
     model = Memo
 
     def post(self, request):
-        values = {val: request.POST[val] for val in
-                  ["id", "title", "text", "created", "category", "chosen", "published"]
-                  if request.POST.get(val, None) is not None}
-        values.update({key: True for key in ["chosen", "published"]
-                       if values.get(key, None) == 'on'})
 
         if request.user.is_authenticated():
+            values = {val: request.POST[val] for val in
+                      ["id", "title", "text", "created", "category", "chosen", "published"]
+                      if request.POST.get(val, None) is not None and request.POST[val] != ''}
+            values.update({key: True for key in ["chosen", "published"]
+                           if values.get(key, None) == 'on'})
+            values.update({'owner': request.user})
+            print(values)
+
             if values.get('id', None) and self.model.objects.filter(
                     id=values['id'], owner=request.user).first():
                 operation = request.POST.get("operation")
                 if operation == "remove":
                     self.model.objects.get(id=values['id']).delete()
                     return self.render_to_json_response({'success': True})
+                if operation == "read":
+                    obj = self.model.objects.get(id=values['id'])
+                    print(obj.as_dict())
+                    return self.render_to_json_response({'data': obj.as_dict(), 'success': True})
                 else:
                     self.model.objects.filter(id=values['id']).update(**values)
                     return self.render_to_json_response({'success': True})
@@ -71,11 +79,13 @@ class MemoAPI(JSONResponseMixin, generic.View):
             elif values.get('id', None):
                 return self.render_to_json_response({
                     'success': False,
-                    'errormsg': "You can't modified memos of other users"
+                    'errormsg': "You can't get access to items of another user"
                 })
 
             else:
-                self.model(**values)
+                a = self.model(**values)
+                a.save()
+                print(type(a))
                 return self.render_to_json_response({'success': True})
         else:
             return self.render_to_json_response({

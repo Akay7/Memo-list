@@ -1,7 +1,7 @@
 Ext.onReady(function(){
     Ext.define("My.scripts.MemoEditForm", {
         memoEditDlg: "None",
-        constructor: function () {
+        constructor: function (id) {
             console.log('before in constructor');
             f = new Ext.FormPanel({
                 labelWidth: 100,
@@ -9,7 +9,14 @@ Ext.onReady(function(){
                 frame: true,
                 defaults: {width: 100},
 
-                items: [{
+                items: [
+                    {
+                        xtype: 'hidden',
+                        fieldLabel: 'Id',
+                        name: 'id',
+                        value: id
+                    },
+                    {
                         xtype: 'textfield',
                         fieldLabel: 'Title',
                         name: 'title',
@@ -40,10 +47,11 @@ Ext.onReady(function(){
                     text: 'OK',
                     minWidth: 75,
                     handler: function() {
-                        f.getForm().submit({
+                        f.getForm().submit(
+                            {
                             success: function(form, action){
-                                Ext.Msg.alert('Success', 'It worked');
-                                //loginDlg.close();
+                                //Ext.Msg.alert('Success', 'It worked');
+                                memoEditDlg.close();
                             },
                             failure: function(form, action){
                                 Ext.Msg.alert('Warning', action.result.errormsg);
@@ -55,8 +63,17 @@ Ext.onReady(function(){
                 {
                     text: 'Cancel',
                     minWidth: 75,
+                    handler: function() {
+                        memoEditDlg.close();
+                    }
                 }]
             });
+            if (id != undefined){
+                f.getForm().load({
+                    params:{id:id, operation: 'read'},
+                    waitMsg: 'Loading'
+                });
+            }
             console.log('f created');
             memoEditDlg = new Ext.Window({
                 height: 400,
@@ -68,10 +85,11 @@ Ext.onReady(function(){
                 layout: 'fit',
                 items: f
             });
+
             memoEditDlg.show();
             this.memoEditDlg = memoEditDlg;
 
         }
     });
-    var bom = new My.scripts.MemoEditForm();
+    //var bom = new My.scripts.MemoEditForm();
 });

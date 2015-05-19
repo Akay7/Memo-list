@@ -128,7 +128,7 @@ Ext.onReady(function(){
                     tooltip: "Edit",
                     handler: function(grid, rowIndex, colIndex) {
                         var rec = store.getAt(rowIndex);
-                        alert(rec.get('pk'));
+                        new My.scripts.MemoEditForm(rec.get('pk'));
                     }
                 }]
             },
@@ -139,6 +139,9 @@ Ext.onReady(function(){
         tbar: [{
             text: 'Add',
             icon :"{% static 'icons/notes.png' %}",
+            handler: function() {
+                new My.scripts.MemoEditForm();
+            }
         },'->',
         {
             text: 'Logout',
