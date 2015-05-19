@@ -71,21 +71,23 @@ Ext.onReady(function(){
             return this.loggedInVar;
         },
 
-        login: function() {
+        login: function(store) {
             loginDlg = this.formGenerator('Login','auth/', 'login');
             loginDlg.show();
+            loginDlg.on('close', function(){store.reload()})
         },
         register: function() {
             registerDlg = this.formGenerator('Register','auth/', 'register');
             registerDlg.show();
         },
-        logout: function() {
+        logout: function(store) {
             Ext.Ajax.request({
                 url: 'auth/',
                 method: 'POST',
                 params: {'operation': 'logout'},
                 success: function(result, request) {
                     this.loggedInVar = false;
+                    store.reload()
                 }
             });
         }

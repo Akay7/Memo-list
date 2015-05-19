@@ -133,7 +133,7 @@ Ext.onReady(function(){
                     tooltip: "Edit",
                     handler: function(grid, rowIndex, colIndex) {
                         var rec = store.getAt(rowIndex);
-                        new My.scripts.MemoEditForm(rec.get('pk'));
+                        new My.scripts.MemoEditForm(store, rec.get('pk'));
                     }
                 }]
             },
@@ -145,21 +145,21 @@ Ext.onReady(function(){
             text: 'Add',
             icon :"{% static 'icons/notes.png' %}",
             handler: function() {
-                new My.scripts.MemoEditForm();
+                new My.scripts.MemoEditForm(store);
             }
         },'->',
         {
             text: 'Logout',
             icon :"{% static 'icons/exit.png' %}",
             handler: function() {
-                auth.logout();
+                auth.logout(store);
             }
         },
         {
             text: 'Login',
             icon :"{% static 'icons/login.png' %}",
             handler: function() {
-                auth.login();
+                auth.login(store);
             }
         },
         {

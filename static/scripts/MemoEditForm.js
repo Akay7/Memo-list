@@ -1,7 +1,7 @@
 Ext.onReady(function(){
     Ext.define("My.scripts.MemoEditForm", {
         memoEditDlg: "None",
-        constructor: function (id) {
+        constructor: function (store, id) {
             console.log('before in constructor');
             category = new Ext.data.Store({
                 reader: new Ext.data.JsonReader({
@@ -71,6 +71,7 @@ Ext.onReady(function(){
                             {
                             success: function(form, action){
                                 //Ext.Msg.alert('Success', 'It worked');
+                                store.reload();
                                 memoEditDlg.close();
                             },
                             failure: function(form, action){
