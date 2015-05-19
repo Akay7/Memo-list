@@ -1,13 +1,17 @@
 import json
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from .models import Memo, Category
 
 
 class MemoTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user('Gordon', 'gordon_freeman@city17.com')
+        self.user = User.objects.create_user(
+            username='Gordon', password='qwerty')
         self.memo = Memo.objects.create(title="FirstTODO", owner=self.user)
+        self.user = User.objects.create_user(
+            username='Aliance', password='123')
+        self.alien_memo = Memo.objects.create(title="Control", owner=self.user)
 
     def test_memo_creating(self):
         self.assertEqual(self.memo.title, "FirstTODO")
@@ -36,11 +40,54 @@ class MemoTest(TestCase):
         self.assertContains(response, self.memo.title)
 
     def test_del_item(self):
-        response = self.client.post(
+        c = Client()
+        response = c.post(
             '/note/api/',
-            {'operation': 'remove', 'item_id': self.memo.id}
+            {'operation': 'remove', 'id': self.memo.id}
         )
-        self.assertNotContains(response, self.memo.title)
+        self.assertContains(response, 'false')
+        c.post(
+            '/auth/',
+            {'operation': 'login',
+             'username': 'Gordon',
+             'password': 'qwerty'}
+        )
+        response = c.post(
+            '/note/api/',
+            {'operation': 'remove', 'id': self.memo.id}
+        )
+        self.assertContains(response, 'true')
+        self.assertEqual(Memo.objects.filter(id=self.memo.id).first(), None)
+        response = c.post(
+            '/note/api/',
+            {'operation': 'remove', 'id': self.alien_memo.id}
+        )
+        self.assertContains(response, 'false')
+
+    def test_memo_edit(self):
+        c = Client()
+        c.post(
+            '/auth/',
+            {'operation': 'login',
+             'username': 'Gordon',
+             'password': 'qwerty'}
+        )
+
+        response = c.post(
+            '/note/api/',
+            {'id': self.memo.id, 'title': 'EditedTODO'}
+        )
+        self.assertContains(response, 'true')
+
+        self.assertEqual(Memo.objects.get(id=self.memo.id).title, 'EditedTODO')
+
+    def test_memo_create(self):
+        self.client.post(
+            '/note/api/',
+            {'title': 'NewMemo'}
+        )
+        m = Memo.objects.filter(title='NewMemo').first()
+
 
 class AuthApiTest(TestCase):
     def test_create_user(self):

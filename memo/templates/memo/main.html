@@ -12,6 +12,7 @@
     <script src="{% static 'ext-js/ext-all-debug.js' %}"></script>
     <script src="{% static 'scripts/Cookie.js' %}"></script>
     <script src="{% static 'scripts/Auth.js' %}"></script>
+    <script src="{% static 'scripts/MemoEditForm.js' %}"></script>
 
     <script>
 
@@ -30,6 +31,10 @@ Ext.onReady(function(){
            {name: 'title', mapping: 'title'},
            {name: 'text', mapping: 'text' },
            {name: 'created', mapping: 'created'},
+           {name: 'category', mapping: 'category'},
+           {name: 'published', mapping: 'published'},
+           {name: 'chosen', mapping: 'chosen'},
+           {name: 'owner', mapping: 'owner'},
         ]
     });
 
@@ -39,13 +44,12 @@ Ext.onReady(function(){
         autoLoad: true
     })
 
-    // create the Grid
     var grid = new Ext.grid.GridPanel({
         store: store,
         columns: [
             {
                 id       :'company',
-                header   : 'id',
+                header   : 'uuid',
                 width    : 20,
                 dataIndex: 'pk'
             },
@@ -67,6 +71,31 @@ Ext.onReady(function(){
                 dataIndex: 'created'
             },
             {
+                header   : 'Published',
+
+                sortable : true,
+                dataIndex: 'published'
+            },
+            {
+                header   : 'Category',
+
+                sortable : true,
+                dataIndex: 'category'
+            },
+            {
+                header   : 'Chosen',
+
+                sortable : true,
+                dataIndex: 'chosen'
+            },
+            {
+                header   : 'Owner',
+
+                sortable : true,
+                dataIndex: 'owner'
+            },
+
+            {
                 xtype: 'actioncolumn',
                 items: [{
                     icon :"{% static 'icons/delete.png' %}",
@@ -85,7 +114,7 @@ Ext.onReady(function(){
                                     Ext.Ajax.request({
                                         url: 'note/api/',
                                         method: 'POST',
-                                        params: {'operation': 'remove', 'item_id': rec.get('pk')},
+                                        params: {'operation': 'remove', 'id': rec.get('pk')},
                                         success: function(result, request) {
                                             grid.getStore().remove(rec);
                                         }
@@ -97,9 +126,12 @@ Ext.onReady(function(){
                 }, {
                     icon :"{% static 'icons/notes.png' %}",
                     tooltip: "Edit",
+                    handler: function(grid, rowIndex, colIndex) {
+                        var rec = store.getAt(rowIndex);
+                        alert(rec.get('pk'));
+                    }
                 }]
             },
-
         ],
         stripeRows: true,
         autoExpandColumn: 'company',
@@ -144,7 +176,7 @@ Ext.onReady(function(){
         title: 'Memo',
         // config options for stateful behavior
         height: 300,
-        width: 500,
+        width: 800,
         stateful: true,
         stateId: 'grid'
     });

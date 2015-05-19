@@ -51,15 +51,36 @@ class MemoAPI(JSONResponseMixin, generic.View):
     model = Memo
 
     def post(self, request):
-        item_id = request.POST.get("item_id")
-        item = self.model.objects.get(id=item_id)
+        values = {val: request.POST[val] for val in
+                  ["id", "title", "text", "created", "category", "chosen", "published"]
+                  if request.POST.get(val, None) is not None}
+        values.update({key: True for key in ["chosen", "published"]
+                       if values.get(key, None) == 'on'})
 
-        operation = request.POST.get("operation")
-        if operation == "remove":
-            item.delete()
-            return self.render_to_json_response({'deleted': True})
+        if request.user.is_authenticated():
+            if values.get('id', None) and self.model.objects.filter(
+                    id=values['id'], owner=request.user).first():
+                operation = request.POST.get("operation")
+                if operation == "remove":
+                    self.model.objects.get(id=values['id']).delete()
+                    return self.render_to_json_response({'success': True})
+                else:
+                    self.model.objects.filter(id=values['id']).update(**values)
+                    return self.render_to_json_response({'success': True})
 
-        return self.render_to_json_response({'deleted': False})
+            elif values.get('id', None):
+                return self.render_to_json_response({
+                    'success': False,
+                    'errormsg': "You can't modified memos of other users"
+                })
+
+            else:
+                self.model(**values)
+                return self.render_to_json_response({'success': True})
+        else:
+            return self.render_to_json_response({
+                'success': False, 'errormsg': 'You not authenticated!'
+            })
 
 class AuthAPI(JSONResponseMixin, generic.View):
     def post(self, request):
@@ -80,9 +101,7 @@ class AuthAPI(JSONResponseMixin, generic.View):
                  'errormsg': 'Please input correct User name and Login'}
             )
         if operation == "logout":
-            print(request.POST)
             logout(request)
-            print('after logout')
             return self.render_to_json_response(
                 {'success': True}
             )
@@ -101,7 +120,6 @@ class AuthAPI(JSONResponseMixin, generic.View):
                 return self.render_to_json_response(
                     {'username': username, 'success': True}
                 )
-
 
 
 class MainPageView(JSONResponseMixin, generic.TemplateView):

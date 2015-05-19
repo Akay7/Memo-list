@@ -12,13 +12,19 @@ class Memo(models.Model):
     published = models.BooleanField(default=False)
 
     def as_dict(self):
+        category = ''
+        if self.category:
+            category = self.category.name
+
         d = dict(
             pk=self.pk,
             title=self.title,
             text=self.text,
             created=self.created.isoformat(),
-            #chosen=self.chosen,
-            #owner=self.owner.username
+            category=category,
+            chosen=self.chosen,
+            published=self.published,
+            owner=self.owner.username
         )
         return d
 
