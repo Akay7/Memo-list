@@ -37,7 +37,15 @@ class MemoTest(TestCase):
 
     def test_get_memo_list_json(self):
         response = self.client.get('/note/get_all/')
-        self.assertContains(response, self.memo.title)
+        self.assertNotContains(response, self.memo.title)
+        self.client.post(
+            '/auth/',
+            {'operation': 'login',
+             'username': 'Gordon',
+             'password': 'qwerty'}
+        )
+
+        self.assertNotContains(response, self.alien_memo.title)
 
     def test_del_item(self):
         c = Client()

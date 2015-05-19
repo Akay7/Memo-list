@@ -81,13 +81,22 @@ Ext.onReady(function(){
             registerDlg.show();
         },
         logout: function(store) {
-            Ext.Ajax.request({
-                url: 'auth/',
-                method: 'POST',
-                params: {'operation': 'logout'},
-                success: function(result, request) {
-                    this.loggedInVar = false;
-                    store.reload()
+            exit_message = Ext.Msg.show({
+                title: 'You leave us?',
+                buttons: Ext.MessageBox.YESNO,
+                msg: 'You really wanna logout?',
+                fn: function(btn) {
+                    if (btn == 'yes'){
+                        Ext.Ajax.request({
+                            url: 'auth/',
+                            method: 'POST',
+                            params: {'operation': 'logout'},
+                            success: function(result, request) {
+                                this.loggedInVar = false;
+                                store.reload();
+                            }
+                        });
+                    };
                 }
             });
         }

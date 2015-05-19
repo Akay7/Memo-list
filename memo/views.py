@@ -24,6 +24,8 @@ class JSONResponseMixin(object):
         Returns an object that will be serialized as JSON by json.dumps().
         """
         if 'object_list' in context:
+            if context['object_list'] is None:
+                return {'data': [], 'success': True}
             return {"data": [i.as_dict() for i in context['object_list']], 'success': True}
 
         return context
@@ -31,6 +33,10 @@ class JSONResponseMixin(object):
 
 class MemoList(JSONResponseMixin, generic.ListView):
     model = Memo
+
+    def get_queryset(self):
+        if self.request.user.id:
+            return self.model.objects.filter(owner=self.request.user)
 
     def render_to_response(self, context, **response_kwargs):
         return self.render_to_json_response(context, **response_kwargs)
