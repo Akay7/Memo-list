@@ -65,28 +65,36 @@ class MemoAPI(JSONResponseMixin, generic.View):
 
     def post(self, request):
         if request.user.is_authenticated():
-            print(request.POST)
             values = {key: request.POST[key] for key in
                       ["id", "title", "text", "created", "category", "chosen", "published"]
                       if request.POST.get(key, None) is not None and request.POST[key] != ''}
             values.update({key: True for key in ["chosen", "published"]
-                           if values.get(key, None) == 'on'})
+                           if values.get(key, None) in ['on', 'true']})
+            values.update({key: False for key in ["chosen", "published"]
+                           if values.get(key, None) is None})
             values.update({key: Category.objects.get() for key in ["category"]
                            if request.POST.get(key, None)})
             values.update({'owner': request.user})
-            print(values)
+
             if values.get('id', None) and self.model.objects.filter(
                     id=values['id'], owner=request.user).first():
                 operation = request.POST.get("operation")
-                if operation == "remove":
+                if operation == "published":
+                    self.model.objects.filter(id=values['id']).update(**{'published': True})
+                    return self.render_to_json_response({'success': True})
+                elif operation == "unpublished":
+                    self.model.objects.filter(id=values['id']).update(**{'published': False})
+                    return self.render_to_json_response({'success': True})
+                elif operation == "choose":
+                    self.model.objects.filter(id=values['id']).update(**{'chosen': values.get('chosen')})
+                    return self.render_to_json_response({'success': True})
+                elif operation == "remove":
                     self.model.objects.get(id=values['id']).delete()
                     return self.render_to_json_response({'success': True})
-                if operation == "read":
+                elif operation == "read":
                     obj = self.model.objects.get(id=values['id'])
-                    print(obj.as_dict())
                     return self.render_to_json_response({'data': obj.as_dict(), 'success': True})
                 else:
-                    print('update')
                     self.model.objects.filter(id=values['id']).update(**values)
                     return self.render_to_json_response({'success': True})
 
@@ -99,7 +107,6 @@ class MemoAPI(JSONResponseMixin, generic.View):
             else:
                 a = self.model(**values)
                 a.save()
-                print(type(a))
                 return self.render_to_json_response({'success': True})
         else:
             return self.render_to_json_response({

@@ -50,6 +50,17 @@ Ext.onReady(function(){
         sortInfo: { field: "created", direction: "ASC" }
     });
 
+    var renderPublish = function(val) {
+        if (val == true)
+            return '<img src="' + "{% static 'icons/eye.png' %}" +  '" />';
+        else
+            return '<img src="' + "{% static 'icons/darkeye.png' %}" +  '" />';
+    };
+    var renderChosen = function(val) {
+        if (val == true)
+            return '<img src="' + "{% static 'icons/favourites.png' %}" +  '" />';
+    };
+
     var grid = new Ext.grid.GridPanel({
         store: store,
         columns: [
@@ -70,7 +81,8 @@ Ext.onReady(function(){
             },
             {
                 header   : 'Published',
-                dataIndex: 'published'
+                dataIndex: 'published',
+                renderer : renderPublish,
             },
             {
                 header   : 'Category',
@@ -80,6 +92,7 @@ Ext.onReady(function(){
             {
                 header   : 'Chosen',
                 sortable : true,
+                renderer : renderChosen,
                 dataIndex: 'chosen'
             },
 
@@ -126,13 +139,48 @@ Ext.onReady(function(){
                         Ext.Ajax.request({
                             url: 'note/api/',
                             method: 'POST',
-                            params: {'id': rec.get('pk'), 'published': 'on'},
+                            params: {'id': rec.get('pk'), 'operation': 'published'},
+                            success: function(result, request) {
+                                store.reload();
+                                Ext.Msg.show({
+                                    title: 'Published',
+                                    msg: location.hostname + '/note/' + rec.get('pk'),
+                                    buttons: Ext.MessageBox.OK,
+                                });
+                            }
+                        });
+                    }
+                }, {
+                    icon :"{% static 'icons/darkeye.png' %}",
+                    tooltip: "Close access",
+                    handler: function(grid, rowIndex, colIndex) {
+                        var rec = store.getAt(rowIndex);
+                        Ext.Ajax.request({
+                            url: 'note/api/',
+                            method: 'POST',
+                            params: {'id': rec.get('pk'), 'operation': 'unpublished'},
                             success: function(result, request) {
                                 store.reload();
                             }
                         });
                     }
-                }]
+                },
+                {
+                    icon :"{% static 'icons/favourites.png' %}",
+                    tooltip: "Choose\Not choose",
+                    handler: function(grid, rowIndex, colIndex) {
+                        var rec = store.getAt(rowIndex);
+                        Ext.Ajax.request({
+                            url: 'note/api/',
+                            method: 'POST',
+                            params: {'id': rec.get('pk'), 'operation': 'choose', 'chosen': !rec.get('chosen')},
+                            success: function(result, request) {
+                                store.reload();
+                            }
+                        });
+                    }
+                }
+                ]
             },
             {
                 header   : 'uuid',

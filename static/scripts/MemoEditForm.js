@@ -2,7 +2,6 @@ Ext.onReady(function(){
     Ext.define("My.scripts.MemoEditForm", {
         memoEditDlg: "None",
         constructor: function (store, id) {
-            console.log('before in constructor');
             category = new Ext.data.Store({
                 reader: new Ext.data.JsonReader({
                     fields: ['tk', 'name'],
@@ -92,7 +91,6 @@ Ext.onReady(function(){
                     waitMsg: 'Loading'
                 });
             }
-            console.log('f created');
             memoEditDlg = new Ext.Window({
                 height: 400,
                 width: 300,

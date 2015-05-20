@@ -1,3 +1,4 @@
+Ext.onReady(function(){
     function getCookie(name) {
           var cookieValue = null;
           if (document.cookie && document.cookie != '') {
@@ -21,3 +22,4 @@
             options.headers["X-CSRFToken"] = getCookie('csrftoken');
         }
     }, this);
+});
