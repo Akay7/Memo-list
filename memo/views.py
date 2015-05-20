@@ -71,8 +71,9 @@ class MemoAPI(JSONResponseMixin, generic.View):
             values.update({key: True for key in ["chosen", "published"]
                            if values.get(key, None) in ['on', 'true']})
             values.update({key: False for key in ["chosen", "published"]
-                           if values.get(key, None) is None})
-            values.update({key: Category.objects.get() for key in ["category"]
+                           if values.get(key, None) is None or values[key] == 'false'})
+            values.update({key: Category.objects.filter(name=request.POST[key]).first()
+                           for key in ["category"]
                            if request.POST.get(key, None)})
             values.update({'owner': request.user})
 
@@ -95,6 +96,7 @@ class MemoAPI(JSONResponseMixin, generic.View):
                     obj = self.model.objects.get(id=values['id'])
                     return self.render_to_json_response({'data': obj.as_dict(), 'success': True})
                 else:
+                    # update model
                     self.model.objects.filter(id=values['id']).update(**values)
                     return self.render_to_json_response({'success': True})
 
@@ -105,6 +107,7 @@ class MemoAPI(JSONResponseMixin, generic.View):
                 })
 
             else:
+                # Creation new instance of model
                 a = self.model(**values)
                 a.save()
                 return self.render_to_json_response({'success': True})

@@ -3,8 +3,11 @@ Ext.onReady(function(){
         memoEditDlg: "None",
         constructor: function (store, id) {
             category = new Ext.data.Store({
+
                 reader: new Ext.data.JsonReader({
-                    fields: ['tk', 'name'],
+                    idProperty: 'pk',
+                    fields:[{name: 'pk', mapping: 'pk'},
+                        {name: 'name', mapping: 'name'}],
                     root: 'data'
                 }),
                 proxy: new Ext.data.HttpProxy({
@@ -46,6 +49,7 @@ Ext.onReady(function(){
                         store: category,
                         displayField:'name',
                         valueField: 'pk',
+
                         name: 'category',
                     },{
                         xtype: 'checkbox',
